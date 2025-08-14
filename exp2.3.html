@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Interactive & Engaging SVG Drawing Tool</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    background: #f4f4f4;
+    height: 100vh;
+    margin: 0;
+  }
+  #drawingArea {
+    border: 2px solid #007bff;
+    background: white;
+    touch-action: none;
+    cursor: crosshair;
+    margin-bottom: 15px;
+  }
+  .toolbar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .color-picker, .brush-size {
+    padding: 5px;
+    font-size: 1rem;
+  }
+  button {
+    padding: 6px 12px;
+    font-size: 1rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  button:hover {
+    background-color: #0056b3;
+  }
+  #cursorPreview {
+    position: absolute;
+    pointer-events: none;
+    border-radius: 50%;
+    border: 2px solid #007bff;
+    transform: translate(-50%, -50%);
+    mix-blend-mode: difference;
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <label for="color">Brush Color:</label>
+  <input type="color" id="color" class="color-picker" value="#007bff">
+
+  <label for="size">Brush Size:</label>
+  <input type="range" id="size" class="brush-size" min="1" max="20" value="2">
+
+  <button id="undoBtn" disabled>Undo</button>
+  <button id="clearBtn">Clear</button>
+</div>
+
+<svg id="drawingArea" width="700" height="400"></svg>
+<div id="cursorPreview"></div>
+
+<script>
+  const svg = document.getElementById('drawingArea');
+  const colorPicker = document.getElementById('color');
+  const sizePicker = document.getElementById('size');
+  const undoBtn = document.getElementById('undoBtn');
+  const clearBtn = document.getElementById('clearBtn');
+  const cursorPreview = document.getElementById('cursorPreview');
+
+  let isDrawing = false;
+  let currentPath;
+  let paths = [];
+
+  function startDrawing(x, y) {
+    isDrawing = true;
+    currentPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    currentPath.setAttribute("stroke", colorPicker.value);
+    currentPath.setAttribute("stroke-width", sizePicker.value);
+    currentPath.setAttribute("fill", "none");
+    currentPath.setAttribute("stroke-linecap", "round");
+    currentPath.setAttribute("stroke-linejoin", "round");
+    currentPath.setAttribute("d", `M ${x} ${y}`);
+    svg.appendChild(currentPath);
+    paths.push(currentPath);
+    updateUndoButton();
+  }
+
+  function draw(x, y) {
+    if (!isDrawing) return;
+    const d = currentPath.getAttribute("d");
+    currentPath.setAttribute("d", d + ` L ${x} ${y}`);
+  }
+
+  function stopDrawing() {
+    isDrawing = false;
+  }
+
+  function getMousePosition(evt) {
+    const rect = svg.getBoundingClientRect();
+    return {
+      x: evt.clientX - rect.left,
+      y: evt.clientY - rect.top
+    };
+  }
+
+  // Undo last stroke
+  function undo() {
+    if (paths.length > 0) {
+      const lastPath = paths.pop();
+      svg.removeChild(lastPath);
+      updateUndoButton();
+    }
+  }
+
+  function updateUndoButton() {
+    undoBtn.disabled = paths.length === 0;
+  }
+
+  // Clear canvas
+  function clearCanvas() {
+    paths.forEach(p => svg.removeChild(p));
+    paths = [];
+    updateUndoButton();
+  }
+
+  // Cursor preview update
+  function updateCursorPreview(x, y) {
+    cursorPreview.style.left = `${x}px`;
+    cursorPreview.style.top = `${y}px`;
+    cursorPreview.style.width = `${sizePicker.value * 2}px`;
+    cursorPreview.style.height = `${sizePicker.value * 2}px`;
+    cursorPreview.style.borderColor = colorPicker.value;
+  }
+
+  // Mouse event handlers
+  svg.addEventListener('mousedown', (e) => {
+    const pos = getMousePosition(e);
+    startDrawing(pos.x, pos.y);
+    updateCursorPreview(e.clientX, e.clientY);
+  });
+
+  svg.addEventListener('mousemove', (e) => {
+    const pos = getMousePosition(e);
+    draw(pos.x, pos.y);
+    updateCursorPreview(e.clientX, e.clientY);
+    cursorPreview.style.display = 'block';
+  });
+
+  svg.addEventListener('mouseup', stopDrawing);
+  svg.addEventListener('mouseleave', () => {
+    stopDrawing();
+    cursorPreview.style.display = 'none';
+  });
+
+  // Touch support
+  svg.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const pos = getMousePosition(touch);
+    startDrawing(pos.x, pos.y);
+    updateCursorPreview(touch.clientX, touch.clientY);
+  });
+
+  svg.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const pos = getMousePosition(touch);
+    draw(pos.x, pos.y);
+    updateCursorPreview(touch.clientX, touch.clientY);
+    cursorPreview.style.display = 'block';
+  });
+
+  svg.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    stopDrawing();
+    cursorPreview.style.display = 'none';
+  });
+
+  // Button event listeners
+  undoBtn.addEventListener('click', undo);
+  clearBtn.addEventListener('click', clearCanvas);
+
+  // Hide cursor preview when outside drawing area
+  document.addEventListener('mousemove', (e) => {
+    const rect = svg.getBoundingClientRect();
+    if (
+      e.clientX < rect.left ||
+      e.clientX > rect.right ||
+      e.clientY < rect.top ||
+      e.clientY > rect.bottom
+    ) {
+      cursorPreview.style.display = 'none';
+    }
+  });
+</script>
+
+</body>
+</html>

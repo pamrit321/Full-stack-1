@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Character Counter</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background: #f4f4f4;
+  }
+  .char-counter-container {
+    max-width: 400px;
+    margin: auto;
+    background: #fff;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  textarea {
+    width: 100%;
+    height: 120px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+    box-sizing: border-box;
+    resize: none;
+  }
+  .counter {
+    margin-top: 8px;
+    font-size: 0.95rem;
+    text-align: right;
+    color: #555;
+  }
+  .counter.warning {
+    color: #d9534f; /* red for limit warning */
+  }
+</style>
+</head>
+<body>
+
+<div class="char-counter-container">
+  <h2>Type your message</h2>
+  <textarea id="message" maxlength="200" placeholder="Write something..."></textarea>
+  <div id="charCounter" class="counter">0 / 200</div>
+</div>
+
+<script>
+  const textarea = document.getElementById('message');
+  const counter = document.getElementById('charCounter');
+  const maxLength = textarea.getAttribute('maxlength');
+
+  textarea.addEventListener('input', () => {
+    const currentLength = textarea.value.length;
+    counter.textContent = `${currentLength} / ${maxLength}`;
+    
+    // Optional: turn red if close to limit
+    if (maxLength - currentLength <= 20) {
+      counter.classList.add('warning');
+    } else {
+      counter.classList.remove('warning');
+    }
+  });
+</script>
+
+</body>
+</html>

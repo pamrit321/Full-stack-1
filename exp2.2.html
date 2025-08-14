@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dynamic Product Filter</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f4f4f4;
+    padding: 20px;
+  }
+  .container {
+    max-width: 900px;
+    margin: auto;
+  }
+  .filter-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+  }
+  select {
+    padding: 6px 10px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  .products {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+  }
+  .product {
+    background: #fff;
+    padding: 15px;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    text-align: center;
+  }
+  .product h3 {
+    font-size: 1.1rem;
+    margin: 10px 0;
+  }
+  .price {
+    color: #28a745;
+    font-weight: bold;
+  }
+  .rating {
+    color: #ff9800;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="filter-row">
+    <label for="sort">Sort by:&nbsp;</label>
+    <select id="sort">
+      <option value="name">Name (A-Z)</option>
+      <option value="price-low-high">Price (Low to High)</option>
+      <option value="price-high-low">Price (High to Low)</option>
+      <option value="rating">Rating (High to Low)</option>
+    </select>
+  </div>
+
+  <div class="products" id="productList">
+    <div class="product" data-name="Laptop" data-price="999" data-rating="4.5">
+      <h3>Laptop</h3>
+      <p class="price">$999</p>
+      <p class="rating">⭐ 4.5</p>
+    </div>
+    <div class="product" data-name="Phone" data-price="699" data-rating="4.8">
+      <h3>Phone</h3>
+      <p class="price">$699</p>
+      <p class="rating">⭐ 4.8</p>
+    </div>
+    <div class="product" data-name="Headphones" data-price="199" data-rating="4.4">
+      <h3>Headphones</h3>
+      <p class="price">$199</p>
+      <p class="rating">⭐ 4.4</p>
+    </div>
+    <div class="product" data-name="Smartwatch" data-price="299" data-rating="4.2">
+      <h3>Smartwatch</h3>
+      <p class="price">$299</p>
+      <p class="rating">⭐ 4.2</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const sortSelect = document.getElementById("sort");
+const productList = document.getElementById("productList");
+
+function sortProducts(criteria) {
+  const products = Array.from(productList.querySelectorAll(".product"));
+
+  products.sort((a, b) => {
+    const nameA = a.dataset.name.toLowerCase();
+    const nameB = b.dataset.name.toLowerCase();
+    const priceA = parseFloat(a.dataset.price);
+    const priceB = parseFloat(b.dataset.price);
+    const ratingA = parseFloat(a.dataset.rating);
+    const ratingB = parseFloat(b.dataset.rating);
+
+    switch (criteria) {
+      case "name":
+        return nameA.localeCompare(nameB);
+      case "price-low-high":
+        return priceA - priceB;
+      case "price-high-low":
+        return priceB - priceA;
+      case "rating":
+        return ratingB - ratingA;
+      default:
+        return 0;
+    }
+  });
+
+  // Re-render sorted products
+  productList.innerHTML = "";
+  products.forEach(prod => productList.appendChild(prod));
+}
+
+// Initial sort and change event
+sortSelect.addEventListener("change", () => sortProducts(sortSelect.value));
+sortProducts(sortSelect.value);
+</script>
+
+</body>
+</html>
