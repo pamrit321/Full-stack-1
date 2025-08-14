@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Responsive Banking UI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --accent: #007bff;
+      --accent-dark: #0056b3;
+      --bg: #f8f9fa;
+      --box: #fff;
+      --shadow: 0 2px 12px rgba(0,0,0,0.03);
+    }
+    body {
+      background: var(--bg);
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 420px;
+      margin: 40px auto;
+      background: var(--box);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      padding: 32px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h2 {
+      margin-bottom: 16px;
+      color: var(--accent-dark);
+    }
+    .balance {
+      font-size: 2.2rem;
+      color: var(--accent-dark);
+      margin-bottom: 30px;
+      font-weight: bold;
+    }
+    .actions {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .action-row {
+      display: flex;
+      width: 100%;
+      gap: 10px;
+    }
+    .action-row input {
+      flex: 1;
+      padding: 9px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+    .action-row button {
+      padding: 0 22px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.18s;
+    }
+    .action-row button:hover,
+    .action-row button:focus {
+      background: var(--accent-dark);
+    }
+    .message {
+      min-height: 24px;
+      color: #e74c3c;
+      text-align: center;
+    }
+    @media (max-width: 600px) {
+      .container {
+        margin: 20px 8px;
+        padding: 24px 6vw;
+      }
+      .balance {
+        font-size: 1.4rem;
+      }
+      h2 {
+        font-size: 1.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Bank Dashboard</h2>
+    <div class="balance" id="balance">$1,000.00</div>
+    <div class="actions">
+      <div class="action-row">
+        <input type="number" id="depositAmount" min="1" placeholder="Deposit amount">
+        <button onclick="deposit()">Deposit</button>
+      </div>
+      <div class="action-row">
+        <input type="number" id="withdrawAmount" min="1" placeholder="Withdraw amount">
+        <button onclick="withdraw()">Withdraw</button>
+      </div>
+    </div>
+    <div class="message" id="message"></div>
+  </div>
+  <script>
+    let balance = 1000;
+    const balanceDisplay = document.getElementById('balance');
+    const msg = document.getElementById('message');
+    function updateBalance() {
+      balanceDisplay.textContent = `$${balance.toLocaleString(undefined,{minimumFractionDigits:2})}`;
+    }
+    function showMessage(text, color="#e74c3c") {
+      msg.textContent = text;
+      msg.style.color = color;
+      setTimeout(() => { msg.textContent=""; }, 2500);
+    }
+    function deposit() {
+      const amt = Number(document.getElementById('depositAmount').value);
+      if (amt > 0) {
+        balance += amt;
+        updateBalance();
+        showMessage(`Deposited $${amt.toFixed(2)}`, "#16a085");
+        document.getElementById('depositAmount').value = "";
+      } else {
+        showMessage("Enter a valid positive amount");
+      }
+    }
+    function withdraw() {
+      const amt = Number(document.getElementById('withdrawAmount').value);
+      if (amt > 0) {
+        if (amt > balance) {
+          showMessage("Insufficient balance");
+        } else {
+          balance -= amt;
+          updateBalance();
+          showMessage(`Withdrew $${amt.toFixed(2)}`, "#e67e22");
+          document.getElementById('withdrawAmount').value = "";
+        }
+      } else {
+        showMessage("Enter a valid positive amount");
+      }
+    }
+    // For initial render
+    updateBalance();
+  </script>
+</body>
+</html>
